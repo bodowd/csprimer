@@ -37,9 +37,41 @@ func encode(bytes []byte) []byte {
 }
 
 func decode(varint []byte) uint64 {
+	/*
+					   for example:
+				       decode(1001 0110 0000 0001):
+
+					   first round
+					   accumulator << = 7 yields 0000 0000
+					   OR with the result of the byte & 127 mask adds to to accumulator
+
+					       0000 0000
+					   OR  0000 0001
+					   -------------
+					       0000 0001 <- the current accumulator value
+
+					   next iteration:
+					   accumulator = 0000 0001
+					   accumulator <<= 7 --> yields 0000 0001 0000 000 (aka 1000 0000)
+					   after byte & 127 of the next block of byte gives 0001 0110
+
+		                    0001 0110
+		                OR  1000 0000 (current accumulator value)
+		                -------------
+		                    1001 0110 = 150
+
+	*/
+
+	// we will accumulate the total
 	accumulator := uint64(0)
+
+	// iterate backward through the varint because we want to get back to big endian
 	for i := len(varint) - 1; i >= 0; i-- {
+		// shift left by 7 places to get a byte and make room for the next 7 bits coming in
 		accumulator <<= 7
+
+		// & with 127 mask to remove the MSB
+		// then OR with accumulator to add to the accumulator
 		accumulator |= uint64(varint[i] & 127)
 	}
 	return accumulator
