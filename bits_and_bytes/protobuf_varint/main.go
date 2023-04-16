@@ -97,4 +97,16 @@ func main() {
 
 	}
 
+	for i := 0; i < 1<<30; i++ {
+		n := uint64(i)
+		b := make([]byte, 8)
+		binary.BigEndian.PutUint64(b, n)
+		fmt.Printf("%d\n", n)
+
+		if decode(encode(b)) != n {
+			fmt.Printf("ERROR on %d", n)
+			os.Exit(1)
+		}
+	}
+
 }
