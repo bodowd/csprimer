@@ -1,13 +1,13 @@
 #include <assert.h>
 #include <stdio.h>
 
-int bitcount(int n) {
+int bitcount(unsigned int n) {
   int count = 0;
 
   while (n) {
-    if (n & 0b1) {
-      count += 1;
-    }
+    count += n & 0b1;
+    // C does arithmetic shift on signed int, so we tell it is a unsigned int
+    // in order to do logical shift
     n >>= 1;
   }
 
@@ -20,6 +20,6 @@ int main() {
   assert(bitcount(3) == 2);
   assert(bitcount(8) == 1);
   // harder case:
-  // assert(bitcount(0xffffffff) == 32);
+  assert(bitcount(0xffffffff) == 32);
   printf("OK\n");
 }
