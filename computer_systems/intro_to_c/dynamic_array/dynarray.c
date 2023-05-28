@@ -47,7 +47,10 @@ void DA_push(DA *da, void *x) {
         da->items, da->capacity * sizeof(void *)); // grow to the new capacity
     printf("Resized to %d\n", da->capacity);
   }
-  // increment length AFTER it is used as the index
+  // increment length AFTER it is used as the index. Increments by one.
+  // same as:
+  // da->items[da->length]=x;
+  // da->length++;
   da->items[da->length++] = x;
 }
 
