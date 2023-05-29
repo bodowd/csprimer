@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -7,6 +8,7 @@
 typedef struct DA {
   // pointer to the starting location of a sequence of pointers to
   // "anything"(void)
+  // we add the pointer to the item to the array
   void **items;
   int length;   // number of items
   int capacity; // we will need to grow and need to know the capacity at any
@@ -83,6 +85,8 @@ int main() {
   int x = 5;
   float y = 12.4;
   DA_push(da, &x);
+  printf("&x: %p\n", &x);
+  printf("&y: %p\n", &y);
   DA_push(da, &y);
   assert(DA_size(da) == 2);
 
