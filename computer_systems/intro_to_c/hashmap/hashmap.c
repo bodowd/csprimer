@@ -49,9 +49,20 @@ Hashmap *Hashmap_new() {
 }
 
 void Hashmap_free(Hashmap *h) {
-  // TODO: free all the nodes in the buckets otherwise the bukets are freed but
-  // the nodes themselves are dangling and leads to memory leak
-  // remember also to free string copies
+  // need to free all the contents of the buckets, not just the bucket
+  Node *prior, *n;
+  for (int i = 0; i < h->num_buckets; i++) {
+    // at each of these locations is the head of a linked list
+    n = h->buckets[i];
+    while (n != NULL) {
+      prior = n;
+      n = n->next;
+      // need to remove the char pointer AND also the string itself because we
+      // created a copy for internal use (strdup(key) inside Hashmap_set)
+      free(prior->key);
+      free(prior);
+    }
+  }
   free(h->buckets);
   free(h);
 }
@@ -95,10 +106,26 @@ void *Hashmap_get(Hashmap *h, char *key) {
 }
 
 void Hashmap_delete(Hashmap *h, char *key) {
-  int i = djb2(key) % h->num_buckets;
+  Hash hash = djb2(key);
+  int i = hash % h->num_buckets;
+  Node *prior = NULL;
   Node *n = h->buckets[i];
-  free(n); // TODO only free if there is something at that location
-  h->buckets[i] = NULL;
+  while (n != NULL) {
+    if (n->hash == hash && strncmp(key, n->key, MAX_KEY_SIZE) == 0) {
+      if (prior == NULL) {
+        // this means we are at the first iteration, the head of the linked list
+        // so we set the head to null
+        h->buckets[i] = NULL;
+      } else {
+        prior->next = n->next;
+      }
+      free(n->key);
+      free(n);
+      return; // we're done so we don't need to continue
+    }
+    prior = n;
+    n = n->next;
+  }
 }
 
 int main() {
