@@ -72,8 +72,11 @@ void Hashmap_set(Hashmap *h, char *key, void *value) {
   int i = hash % h->num_buckets;
   Node *n = h->buckets[i]; // go to where the first node would be, if it exists
   while (n != NULL) {
-    // if key is same hash as what is already stored there, and the key is the
-    // same, replace the value of the node
+    // it's possible that different hash goes to the same bucket because of the
+    // modulus it's also possible that different keys hash to the same value
+    // (collision) so we need to check both
+    // if the key is same hash as what is already stored there, and the key is
+    // the same, replace the value of the node
     if (n->hash == hash && strncmp(key, n->key, MAX_KEY_SIZE) == 0) {
       n->value = value;
       return;
@@ -81,6 +84,7 @@ void Hashmap_set(Hashmap *h, char *key, void *value) {
     n = n->next;
   }
   // otherwise, we have gotten to the end of the linked list at this bucket
+  // insert new node at the head
   n = malloc(sizeof(Node));
   n->key = strdup(key);
   n->value = value;
