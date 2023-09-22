@@ -10,15 +10,10 @@ class Address(object):
         self.zipcode = zipcode
 
 
-class DollarAmount(object):
-    def __init__(self, dollars, cents):
+class Payment(object):
+    def __init__(self, dollars, cents, time):
         self.dollars = dollars
         self.cents = cents
-
-
-class Payment(object):
-    def __init__(self, dollar_amount, time):
-        self.amount = dollar_amount
         self.time = time
 
 
@@ -44,7 +39,7 @@ def average_payment_amount(users):
     for u in users.values():
         count += len(u.payments)
         for p in u.payments:
-            amount += float(p.amount.dollars) + float(p.amount.cents) / 100
+            amount += float(p.dollars) + float(p.cents) / 100
     return amount / count
 
 
@@ -55,7 +50,7 @@ def stddev_payment_amount(users):
     for u in users.values():
         count += len(u.payments)
         for p in u.payments:
-            amount = float(p.amount.dollars) + float(p.amount.cents) / 100
+            amount = float(p.dollars) + float(p.cents) / 100
             diff = amount - mean
             squared_diffs += diff * diff
     return math.sqrt(squared_diffs / count)
@@ -63,27 +58,29 @@ def stddev_payment_amount(users):
 
 def load_data():
     users = {}
-    with open('users.csv') as f:
+    with open("users.csv") as f:
         for line in csv.reader(f):
             uid, name, age, address_line, zip_code = line
             addr = Address(address_line, zip_code)
             users[int(uid)] = User(int(uid), name, int(age), addr, [])
-    with open('payments.csv') as f:
+    with open("payments.csv") as f:
         for line in csv.reader(f):
             amount, timestamp, uid = line
             payment = Payment(
-                DollarAmount(dollars=int(amount)//100, cents=int(amount) % 100),
-                time=datetime.datetime.fromisoformat(timestamp))
+                dollars=int(amount) // 100,
+                cents=int(amount) % 100,
+                time=datetime.datetime.fromisoformat(timestamp),
+            )
             users[int(uid)].payments.append(payment)
     return users
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     t = time.perf_counter()
     users = load_data()
-    print(f'Data loading: {time.perf_counter() - t:.3f}s')
+    print(f"Data loading: {time.perf_counter() - t:.3f}s")
     t = time.perf_counter()
     assert abs(average_age(users) - 59.626) < 0.01
     assert abs(stddev_payment_amount(users) - 288684.849) < 0.01
     assert abs(average_payment_amount(users) - 499850.559) < 0.01
-    print(f'Computation {time.perf_counter() - t:.3f}s')
+    print(f"Computation {time.perf_counter() - t:.3f}s")
