@@ -38,3 +38,20 @@ Sixth change:
 - Remove user_id from User because it's also not used in the calculation
   - Data loading: 2.559s
   - Computation 1.787s
+
+Seventh change:
+
+- Refactor to not use objects at all. Instead put the necessary data into lists
+  - Data loading: 0.781s
+  - Computation 0.404s
+
+Summary:
+
+Instead of having data structures through which we're referencing objects through which we're referencing objects again,
+just load the values we want to compute. This provides the big win. There are still some optimizations that can be done,
+for example, removing redundant things. Could also try using python array module which provides basically a typed array
+instead of packing the lists with py objects.
+
+If you're frequently iterating over like data, that data should be close together and not followed through a pointer chase
+
+May go against OO patterns
