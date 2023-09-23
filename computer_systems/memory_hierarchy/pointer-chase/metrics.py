@@ -4,25 +4,15 @@ import math
 import time
 
 
-class Address(object):
-    def __init__(self, address_line, zipcode):
-        self.address_line = address_line
-        self.zipcode = zipcode
-
-
 class Payment(object):
-    def __init__(self, dollars, cents, time):
+    def __init__(self, dollars, cents):
         self.dollars = dollars
         self.cents = cents
-        self.time = time
 
 
 class User(object):
-    def __init__(self, user_id, name, age, address, payments):
-        self.user_id = user_id
-        self.name = name
+    def __init__(self, age, payments):
         self.age = age
-        self.address = address
         self.payments = payments
 
 
@@ -61,15 +51,13 @@ def load_data():
     with open("users.csv") as f:
         for line in csv.reader(f):
             uid, name, age, address_line, zip_code = line
-            addr = Address(address_line, zip_code)
-            users[int(uid)] = User(int(uid), name, int(age), addr, [])
+            users[int(uid)] = User(int(age), [])
     with open("payments.csv") as f:
         for line in csv.reader(f):
             amount, timestamp, uid = line
             payment = Payment(
                 dollars=int(amount) // 100,
                 cents=int(amount) % 100,
-                time=datetime.datetime.fromisoformat(timestamp),
             )
             users[int(uid)].payments.append(payment)
     return users
