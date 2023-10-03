@@ -23,6 +23,56 @@
  * and random, and try to explain any differences you see with actual
  * measurements!
  *
+ * Estimations:
+ * - struct number size: 12 B
+ *      short 2B
+ *      int 4B
+ *      short 2B
+ * but there is 2B padding after Short to line int on a 4B boundary
+ * so with 2*2B padding, we get 12B for the struct number
+ *
+ * - n = 1 << 26 = 2^26 = 2^6 * 2^20 =~ 64M
+ * - total data size: ~64*12 =~ 750MB
+ * - this gives us an idea of how much of our data would even fit into cache
+ *    we will overwhelm even L3 (which may be ~6MB)
+ *
+ * - cache line is 64B and struct size is 12B: so we can get ~5 structs per
+ * cache line (12 * 5 = 60). A struct that straddles the cache line, you will
+ * have to retrieve again
+ *
+ * - Q: How many memory accesses does it take to compute the sum of nums?
+ *      - we will loop n times
+ *      - then we will do one lookup in indexes
+ *      - and one lookup in nums (to get nums.value)
+ *      - so 2 lookups times n times
+ *      - memory accesses per invocation of sum: 2 * n = 2 * ~64M =~ 130M
+        - ordered access: (4 byte ints. 64 byte cache line)
+            so 16 ints in a cache line
+            1 time out of 16 we will miss the cache (the next int after the 16th
+ int) 1 miss 15 hits
+            5 structs per cache line
+           ... 1/16 * 65M cache misses L1data cache + 1/5 structs * 65M L1d
+           cache misses
+           =~ 17M misses
+
+        - random access: likely much more misses
+        1/16 * 65M + 5/5 * 65M =~ 69M L1d misses
+
+
+Q: what if we reordered the fields in the struct?
+originally:
+struct number {
+  short foo;
+  int value;
+  short bar;
+};
+
+struct number {
+  int value;
+  short bar;
+  short foo;
+};
+
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,20 +80,19 @@
 #include <time.h>
 
 struct number {
-    short foo;
-    int value;
-    short bar;
+  int value;
+  short foo;
+  short bar;
 };
 
-
 int sum(struct number nums[], int indexes[], int n) {
-    int idx, total = 0;
+  int idx, total = 0;
 
-    for (int i = 0; i < n; i++) {
-        idx = indexes[i];
-        total += nums[idx].value;
-    }
-    return total;
+  for (int i = 0; i < n; i++) {
+    idx = indexes[i];
+    total += nums[idx].value;
+  }
+  return total;
 }
 
 void shuffle(int *array, size_t n) {
@@ -91,4 +140,3 @@ int main(int argc, char **argv) {
            (double)(end - start) / CLOCKS_PER_SEC);
   }
 }
-
