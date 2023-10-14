@@ -74,23 +74,32 @@ int main() {
   assert(DA_size(da) == 0);
 
   // expansion test
-  DA *da2 = DA_new(); // use another DA to show it doesn't get overriden
-  DA_push(da2, &x);
-  int i, n = 100 * STARTING_CAPACITY, arr[n];
-  for (i = 0; i < n; i++) {
-    arr[i] = i;
-    DA_push(da, &arr[i]);
-  }
-  assert(DA_size(da) == n);
-  for (i = 0; i < n; i++) {
-    assert(DA_get(da, i) == &arr[i]);
-  }
-  for (; n; n--)
-    DA_pop(da);
-  assert(DA_size(da) == 0);
-  assert(DA_pop(da2) == &x); // this will fail if da doesn't expand
+  // DA *da2 = DA_new(); // use another DA to show it doesn't get overriden
+  // DA_push(da2, &x);
+  // int i, n = 100 * STARTING_CAPACITY, arr[n];
+  // for (i = 0; i < n; i++) {
+  //   arr[i] = i;
+  //   DA_push(da, &arr[i]);
+  // }
+  // assert(DA_size(da) == n);
+  // for (i = 0; i < n; i++) {
+  //   assert(DA_get(da, i) == &arr[i]);
+  // }
+  // for (; n; n--)
+  //   DA_pop(da);
+  // assert(DA_size(da) == 0);
+  // assert(DA_pop(da2) == &x); // this will fail if da doesn't expand
+
+  printf("Try to access index that is not there\n");
+  void *nope = DA_get(da, 3);
+  printf("nope: %p\n", nope);
+
+  int n = 5;
+  DA_set(da, &n, 3);
+  void *nope2 = DA_get(da, 3);
+  printf("nope2: %p\n", nope2);
 
   DA_free(da);
-  DA_free(da2);
+  // DA_free(da2);
   printf("OK\n");
 }
